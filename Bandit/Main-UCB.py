@@ -28,9 +28,6 @@ Bandit_BKL['Prob_opt_roll'] = Bandit_BKL['Prob_opt'].rolling(window=window_size 
 Bandit_BKL['Prob_opt_roll'][pd.isnull(Bandit_BKL['Prob_opt_roll'])] = Bandit_BKL['Prob_opt'][pd.isnull(Bandit_BKL['Prob_opt_roll'])]
 
 
-
-
-
 f, ax = plt.subplots(2, sharex='all')
 plt.title("KL-UCB")
 ax[0].set_title('Cumulative regret',size=20)
@@ -46,12 +43,14 @@ ax[1].plot(Bandit_KL['Prob_opt_roll'], label="KL-UCB")
 ax[1].plot(Bandit_BKL['Prob_opt_roll'], label="B-KL-UCB")
 ax[1].legend(fontsize=13)
 ax[1].set_xlabel('Trials', fontsize = 15) # X label
-ax[1].set_ylabel('Cumulative regret',fontsize=15)
+ax[1].set_ylabel('Probability',fontsize=15)
 
 
 
 
 
+############################################################################
+############################################################################
 execfile('Bandit/LinUCB.py')
 execfile('Bandit/B-LinUCB.py')
 

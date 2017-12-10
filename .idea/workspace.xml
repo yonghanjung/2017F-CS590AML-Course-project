@@ -14,8 +14,8 @@
       <file leaf-file-name="Main-UCB.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Bandit/Main-UCB.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="595">
-              <caret line="69" column="43" lean-forward="true" selection-start-line="54" selection-start-column="0" selection-end-line="69" selection-end-column="43" />
+            <state relative-caret-position="553">
+              <caret line="45" column="43" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="45" selection-end-column="43" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -62,8 +62,8 @@
       <file leaf-file-name="Data_generation.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Data_generation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="533">
-              <caret line="120" column="35" lean-forward="false" selection-start-line="120" selection-start-column="35" selection-end-line="120" selection-end-column="35" />
+            <state relative-caret-position="714">
+              <caret line="124" column="18" lean-forward="false" selection-start-line="124" selection-start-column="18" selection-end-line="124" selection-end-column="18" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -121,9 +121,9 @@
         <option value="$PROJECT_DIR$/Bandit/UCB.py" />
         <option value="$PROJECT_DIR$/Case4/case4-2.py" />
         <option value="$PROJECT_DIR$/Case4/case4-1.py" />
-        <option value="$PROJECT_DIR$/Data_generation.py" />
         <option value="$PROJECT_DIR$/Bandit/LinUCB.py" />
         <option value="$PROJECT_DIR$/Bandit/B-LinUCB.py" />
+        <option value="$PROJECT_DIR$/Data_generation.py" />
         <option value="$PROJECT_DIR$/Bandit/Main-UCB.py" />
       </list>
     </option>
@@ -597,10 +597,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Data_generation.py">
+    <entry file="file://$PROJECT_DIR$/Bandit/B-LinUCB.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="533">
-          <caret line="120" column="35" lean-forward="false" selection-start-line="120" selection-start-column="35" selection-end-line="120" selection-end-column="35" />
+        <state relative-caret-position="89">
+          <caret line="86" column="8" lean-forward="false" selection-start-line="86" selection-start-column="8" selection-end-line="86" selection-end-column="8" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -617,10 +617,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Bandit/B-LinUCB.py">
+    <entry file="file://$PROJECT_DIR$/Data_generation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="89">
-          <caret line="86" column="8" lean-forward="false" selection-start-line="86" selection-start-column="8" selection-end-line="86" selection-end-column="8" />
+        <state relative-caret-position="714">
+          <caret line="124" column="18" lean-forward="false" selection-start-line="124" selection-start-column="18" selection-end-line="124" selection-end-column="18" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -629,8 +629,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Bandit/Main-UCB.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="595">
-          <caret line="69" column="43" lean-forward="true" selection-start-line="54" selection-start-column="0" selection-end-line="69" selection-end-column="43" />
+        <state relative-caret-position="553">
+          <caret line="45" column="43" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="45" selection-end-column="43" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

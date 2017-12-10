@@ -84,6 +84,8 @@ def Data_generation(case_num, N, Ns, dim, seed_num = 123):
         return Obs, Intv, Intv_S
 
     elif case_num == 4 or case_num == 41:
+
+        '''For Lin UCB'''
         np.random.seed(seed_num)
 
         mu1 = np.random.rand(dim)
@@ -104,7 +106,7 @@ def Data_generation(case_num, N, Ns, dim, seed_num = 123):
         U2 = np.random.multivariate_normal(mu2, cov2, N)
         U3 = np.random.multivariate_normal(mu3, cov3, N)
 
-        Z = normalize(-1 * U1 + 1 * U2)
+        Z = normalize(1 * U1 + 1 * U2)
         sample_indices_disc = np.random.choice(list(range(0, dim)), int(dim / 3), replace=False)
         Z_replace = np.random.binomial(1, 0.5, (N, len(sample_indices_disc)))
         Z[:, sample_indices_disc] = Z_replace
@@ -117,15 +119,16 @@ def Data_generation(case_num, N, Ns, dim, seed_num = 123):
                  np.array(np.matrix(U3) * coef_u3y)
 
         Y_norm = (Y_orig - np.mean(Y_orig) )/np.std(Y_orig)
-        # Y_norm = Y_orig
-        Y = 3*Y_norm + np.reshape(1 * X, (N, 1))
-        # Y = np.round( inverse_logit(Y), 0)
+        Y = 1*Y_norm + np.reshape(1 * X, (N, 1))
 
         X_intv = intfy(np.asarray([0] * int(N / 2) + [1] * int(N / 2)))
-        Y_intv = 3*Y_norm + np.reshape(1 * X_intv, (N, 1))
-        # Y_intv = np.round(inverse_logit(Y_intv), 0)
+        Y_intv = 1*Y_norm + np.reshape(1 * X_intv, (N, 1))
 
-
+        ########################################################################
+        ########################################################################
+        # '''For Lin UCB'''
+        # np.random.seed(seed_num)
+        #
         # mu1 = np.random.rand(dim)
         # mu2 = np.random.rand(dim)
         # mu3 = np.random.rand(dim)
@@ -133,32 +136,35 @@ def Data_generation(case_num, N, Ns, dim, seed_num = 123):
         # cov2 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
         # cov3 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
         #
-        # coef_xz = np.reshape(-1 * np.random.rand(dim), (dim, 1))
-        # coef_u1x = np.reshape(-1 * np.random.rand(dim), (dim, 1))
+        # coef_xz = np.reshape(1 * np.random.rand(dim), (dim, 1))
+        # coef_u1x = np.reshape(1 * np.random.rand(dim), (dim, 1))
         # coef_u3x = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        # coef_zy = np.reshape(2 * np.random.rand(dim), (dim, 1))
+        # coef_zy = np.reshape(1 * np.random.rand(dim), (dim, 1))
+        # coef_u2y = np.reshape(1 * np.random.rand(dim), (dim, 1))
+        # coef_u3y = np.reshape(1 * np.random.rand(dim), (dim, 1))
         #
         # U1 = np.random.multivariate_normal(mu1, cov1, N)
         # U2 = np.random.multivariate_normal(mu2, cov2, N)
         # U3 = np.random.multivariate_normal(mu3, cov3, N)
         #
-        # Z = normalize(2 * U1 + 1 * U2)
+        # Z = normalize(-1 * U1 + 1 * U2)
         # sample_indices_disc = np.random.choice(list(range(0, dim)), int(dim / 3), replace=False)
         # Z_replace = np.random.binomial(1, 0.5, (N, len(sample_indices_disc)))
         # Z[:, sample_indices_disc] = Z_replace
         #
         # X = intfy(np.round(
         #     inverse_logit(normalize(np.matrix(Z) * coef_xz + np.matrix(U1) * coef_u1x + np.matrix(U3) * coef_u3x)), 0))
-        # Y = np.array(np.matrix(Z) * coef_zy) + \
-        #     np.reshape(np.array(U2[:, dim - 1]), (N, 1)) + \
-        #     np.reshape(np.array(U3[:, 1]), (N, 1)) + \
-        #     15 * np.reshape(X, (N, 1))
+        #
+        # Y_orig = np.array(np.matrix(Z) * coef_zy) + \
+        #          np.array(np.matrix(U2) * coef_u2y) + \
+        #          np.array(np.matrix(U3) * coef_u3y)
+        #
+        # Y_norm = (Y_orig - np.mean(Y_orig) )/np.std(Y_orig)
+        # # Y_norm = Y_orig
+        # Y = 3*Y_norm + np.reshape(1 * X, (N, 1))
         #
         # X_intv = intfy(np.asarray([0] * int(N / 2) + [1] * int(N / 2)))
-        # Y_intv = np.array(np.matrix(Z) * coef_zy) + \
-        #          np.reshape(np.array(U2[:, dim - 1]), (N, 1)) + \
-        #          np.reshape(np.array(U3[:, 1]), (N, 1)) + \
-        #          15 * np.reshape(X_intv, (N, 1))
+        # Y_intv = 3*Y_norm + np.reshape(1 * X_intv, (N, 1))
 
         X_obs = np.asarray(X)
         Y_obs = np.asarray(Y)
