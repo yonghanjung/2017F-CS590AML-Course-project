@@ -148,19 +148,33 @@ for t in range(T):
     # Observe Z
     Z = list( Intv[ list(range(dim)) ].loc[t] )
     UCB_t = []
-    UB_t = []
+    UB_list = []
+    LB_list = []
     X_t = []
     true_rewards = []
-    for a in range(K):
-        x_ta = np.matrix( np.asarray( [a] + Z ) ).T
-        w_ta = alpha * np.sqrt( np.asarray( x_ta.T * A.I * x_ta )[0][0] )
-        ucb_ta = np.asarray(theta_t.T * x_ta)[0][0] + w_ta
 
+    for a in range(K):
+        x_ta = np.matrix(np.asarray([a] + Z)).T
         obs_mean = obs_fit.predict(np.array(flatten(x_ta.tolist())))[0]
         pxz = obs_x_fit.predict_proba(Z)[0][a]
         Hxz = -np.log(pxz)
         C = Hxz + 0.5 - np.log(std_s_do / std_obs) - (std_obs ** 2) / (2 * std_s_do ** 2)
         UB_a = obs_mean + std_s_do * np.sqrt(2 * C)
+        LB_a = obs_mean - std_s_do * np.sqrt(2 * C)
+        UB_list.append(UB_a)
+        LB_list.append(LB_a)
+
+    l_max = max(LB_list)
+
+    for a in range(K):
+        if UB_list[a] < l_max:
+            print(t)
+            continue
+
+        x_ta = np.matrix( np.asarray( [a] + Z ) ).T
+        w_ta = alpha * np.sqrt( np.asarray( x_ta.T * A.I * x_ta )[0][0] )
+        ucb_ta = np.asarray(theta_t.T * x_ta)[0][0] + w_ta
+        UB_a = UB_list[a]
 
         true_rt = true_fit.predict(np.array(flatten(x_ta.tolist())))[0]
         true_rewards.append(true_rt)
@@ -170,7 +184,7 @@ for t in range(T):
             UCB_t.append( min(ucb_ta,UB_a ))
         X_t.append(x_ta)
         # UCB_t.append(ucb_ta)
-        UB_t.append(UB_a)
+        # UB_t.append(UB_a)
 
     at = np.argmax(UCB_t)
     opt_arm = np.argmax(true_rewards)
@@ -188,17 +202,17 @@ for t in range(T):
     Bandit_BLin['Cum_regret'].append(sum_regret)
     Bandit_BLin['Prob_opt'].append(prob_opt)
     Bandit_BLin['UCB'].append(UCB_t[at])
-    Bandit_BLin['UB'].append(UB_t[at])
+    Bandit_BLin['UB'].append(UB_list[at])
     b += rt * x_ta
     A += x_ta * x_ta.T
     print(round(t/T,3))
 
 Bandit_BLin  = pd.DataFrame.from_dict(Bandit_BLin )
 #
-# # Graphical illustration
-# f, ax = plt.subplots(2, sharex='all')
-# ax[0].set_title('Cumulative regret')
-# ax[0].plot(Bandit_BLin ['Cum_regret'])
-#
-# ax[1].set_title('Probability of choosing opt arm')
-# ax[1].plot(Bandit_BLin ['Prob_opt'])
+# Graphical illustration
+f, ax = plt.subplots(2, sharex='all')
+ax[0].set_title('Cumulative regret')
+ax[0].plot(Bandit_BLin ['Cum_regret'])
+
+ax[1].set_title('Probability of choosing opt arm')
+ax[1].plot(Bandit_BLin ['Prob_opt'])

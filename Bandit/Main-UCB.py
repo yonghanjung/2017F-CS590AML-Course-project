@@ -54,16 +54,28 @@ ax[1].set_ylabel('Probability',fontsize=15)
 execfile('Bandit/LinUCB.py')
 execfile('Bandit/B-LinUCB.py')
 
+window_size = 100
+
+Bandit_Lin['Cum_regret_roll'] = Bandit_Lin['Cum_regret'].rolling(window=window_size ).mean()
+Bandit_Lin['Cum_regret_roll'][pd.isnull(Bandit_Lin['Cum_regret_roll'])] = Bandit_Lin['Cum_regret'][pd.isnull(Bandit_Lin['Cum_regret_roll'])]
+Bandit_Lin['Prob_opt_roll'] = Bandit_Lin['Prob_opt'].rolling(window=window_size ).mean()
+Bandit_Lin['Prob_opt_roll'][pd.isnull(Bandit_Lin['Prob_opt_roll'])] = Bandit_Lin['Prob_opt'][pd.isnull(Bandit_Lin['Prob_opt_roll'])]
+
+Bandit_BLin['Cum_regret_roll'] = Bandit_BLin['Cum_regret'].rolling(window=window_size ).mean()
+Bandit_BLin['Cum_regret_roll'][pd.isnull(Bandit_BLin['Cum_regret_roll'])] = Bandit_BLin['Cum_regret'][pd.isnull(Bandit_BLin['Cum_regret_roll'])]
+Bandit_BLin['Prob_opt_roll'] = Bandit_BLin['Prob_opt'].rolling(window=window_size ).mean()
+Bandit_BLin['Prob_opt_roll'][pd.isnull(Bandit_BLin['Prob_opt_roll'])] = Bandit_BLin['Prob_opt'][pd.isnull(Bandit_BLin['Prob_opt_roll'])]
+
 f, ax = plt.subplots(2, sharex='all')
 ax[0].set_title('Cumulative regret',size=20)
-ax[0].plot(Bandit_Lin['Cum_regret'],label="LinUCB")
-ax[0].plot(Bandit_BLin['Cum_regret'] ,label="B-LinUCB")
+ax[0].plot(Bandit_Lin['Cum_regret_roll'],label="LinUCB")
+ax[0].plot(Bandit_BLin['Cum_regret_roll'] ,label="B-LinUCB")
 ax[0].legend(fontsize=13)
 ax[0].set_ylabel('Cumulative regret',fontsize=15)
 
 ax[1].set_title('Probability of choosing opt arm', size=20)
-ax[1].plot(Bandit_Lin['Prob_opt'], label="LinUCB")
-ax[1].plot(Bandit_BLin['Prob_opt'], label="B-LinUCB")
+ax[1].plot(Bandit_Lin['Prob_opt_roll'], label="LinUCB")
+ax[1].plot(Bandit_BLin['Prob_opt_roll'], label="B-LinUCB")
 ax[1].legend(fontsize=13)
 ax[1].set_xlabel('Trials', fontsize = 15) # X label
 ax[1].set_ylabel('Probability',fontsize=15)
