@@ -336,11 +336,11 @@ class CausalBound(KL_computation):
             Hx = self.Entropy_x()
             rounding_digit = 3
             f_means = np.round(self.dpobs.means_, rounding_digit)
-            g_means = np.round(self.dpintv.means_, rounding_digit)
+            # g_means = np.round(self.dpintv.means_, rounding_digit)
             f_weights = np.round(self.dpobs.weights_, rounding_digit)
-            g_weights = np.round(self.dpintv.weights_, rounding_digit)
+            g_weights = np.round(self.dpintv_s.weights_, rounding_digit)
             f_stds = np.ndarray.flatten(np.round(np.sqrt(self.dpobs.covariances_), rounding_digit))
-            g_stds = np.ndarray.flatten(np.round(np.sqrt(self.dpintv.covariances_), rounding_digit))
+            g_stds = np.ndarray.flatten(np.round(np.sqrt(self.dpintv_s.covariances_), rounding_digit))
 
             cons = ({'type': 'ineq',
                      'fun': lambda x: Hx - self.KL_GMM(f_weights, g_weights, f_means, x, f_stds, g_stds)[0]},
