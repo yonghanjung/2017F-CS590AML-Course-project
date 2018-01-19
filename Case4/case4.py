@@ -256,18 +256,30 @@ elif fig_version == 2:
     y_graphic = 0.5
     y_domain = np.array([y_graphic] * len(x_domain))
 
-    ax[0].set_title('Interval of P(y|do(X= 0))')
+    title_size = 40
+    label_size = 30
+    legend_size = 25
+    marker_size = 15
+
+    ax[0].set_title('Interval of P(y|do(X= 0))', fontsize=title_size)
     ax[0].plot(x_domain, y_domain)
     ax[0].axvline(x=min_val, ymin=0.48, ymax=0.52)
     ax[0].axvline(x=max_val, ymin=0.48, ymax=0.52)
-    ax[0].axvline(x=LB0, ymin=0.35, ymax=0.65)
-    ax[0].axvline(x=UB0, ymin=0.35, ymax=0.65)
-    ax[0].plot(mu_ydox0, y_graphic, marker='o', color='r')
+    ax[0].axvline(x=LB0, ymin=0.35, ymax=0.65, label="Lower bound")
+    ax[0].axvline(x=UB0, ymin=0.35, ymax=0.65, label="Upper bound")
+    ax[0].plot(mu_ydox0, y_graphic, marker='o', color='r', label="P(y|do(X=0))",markersize=marker_size)
+    ax[0].set_xlabel('Mean of causal quantity', fontsize=label_size)  # X label
+    ax[0].yaxis.set_visible(False)  # Hide only x axis
+    ax[0].xaxis.set_visible(False)  # Hide only x axis
+    ax[0].legend(fontsize=legend_size)
 
     ax[1].plot(x_domain, y_domain)
-    ax[1].set_title('Interval of P(y|do(X= 1))')
+    ax[1].set_title('Interval of P(y|do(X= 1))', fontsize=title_size)
     ax[1].axvline(x=min_val, ymin=0.48, ymax=0.52)
     ax[1].axvline(x=max_val, ymin=0.48, ymax=0.52)
-    ax[1].axvline(x=LB1, ymin=0.35, ymax=0.65)
-    ax[1].axvline(x=UB1, ymin=0.35, ymax=0.65)
-    ax[1].plot(mu_ydox1, y_graphic, marker='o', color='r')
+    ax[1].axvline(x=LB1, ymin=0.35, ymax=0.65, label="Lower bound")
+    ax[1].axvline(x=UB1, ymin=0.35, ymax=0.65, label="Upper bound")
+    ax[1].plot(mu_ydox1, y_graphic, marker='o', color='r', label="P(y|do(X=1))",markersize=marker_size)
+    ax[1].set_xlabel('Mean of causal quantity', fontsize=label_size)  # X label
+    ax[1].yaxis.set_visible(False)  # Hide only x axis
+    ax[1].legend(fontsize=legend_size)

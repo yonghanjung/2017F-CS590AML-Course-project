@@ -54,7 +54,7 @@ ax[1].set_ylabel('Probability',fontsize=15)
 execfile('Bandit/LinUCB.py')
 execfile('Bandit/B-LinUCB.py')
 
-window_size = 100
+window_size = 20
 
 Bandit_Lin['Cum_regret_roll'] = Bandit_Lin['Cum_regret'].rolling(window=window_size ).mean()
 Bandit_Lin['Cum_regret_roll'][pd.isnull(Bandit_Lin['Cum_regret_roll'])] = Bandit_Lin['Cum_regret'][pd.isnull(Bandit_Lin['Cum_regret_roll'])]

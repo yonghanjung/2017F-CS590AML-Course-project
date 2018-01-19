@@ -1,170 +1,107 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import normalize
+import matplotlib.pyplot as plt
+from scipy.stats import gaussian_kde
 
-def intfy(W):
-    return np.array(list(map(int,W)))
-def inverse_logit(Z):
-    return np.exp(Z) / (np.exp(Z)+1)
+class Data_generaiton(object):
+    np.random.seed(12345)
+    def __init__(self, num_obs, num_intv, dim):
+        self.num_obs = num_obs
+        self.num_intv = num_intv
+        self.dim = dim
 
-def Data_generation(case_num, N, Ns, dim, seed_num = 123):
-    if case_num == 1 or case_num == 11:
-        np.random.seed(seed_num)
+    def intfy(self,W):
+        return np.array(list(map(int, W)))
 
-        U1 = np.random.normal(1, 10, N)
-        U2 = np.random.normal(0, 10, N)
-        U3 = np.random.binomial(1, 0.2, N)
+    def inverse_logit(self,Z):
+        return np.exp(Z) / (np.exp(Z) + 1)
 
-        Z = U1 + U2
-        X = np.round((inverse_logit(2 * U1 + 3 * Z) + U3) / 2, 0)
-        Y = np.round((inverse_logit(2 * U2 - 3 * Z) + (X + U3) / 2) / 2, 0)
+    def weird_projection(self, X):
+        # X can be either matrix or vector
+        X_proj = np.log(np.abs(X)+20) * np.arctan(X ** 2) + np.exp(np.sin(X)) - np.log(np.tanh(X) ** 2 + 2) * np.exp(X)
+        X_proj = (X_proj - np.mean(X_proj, axis=0)) / np.var(X_proj)
+        return X_proj
 
-        X = intfy(X)
-        Y = intfy(Y)
+    def gen_U(self):
+        mu1 = np.random.rand(self.dim)
+        mu2 = np.random.rand(self.dim)
+        mu3 = np.random.rand(self.dim)
+        cov1 = np.dot(np.random.rand(self.dim, self.dim),
+                      np.random.rand(self.dim, self.dim).transpose())
+        cov2 = np.dot(np.random.rand(self.dim, self.dim),
+                      np.random.rand(self.dim, self.dim).transpose())
+        cov3 = np.dot(np.random.rand(self.dim, self.dim),
+                      np.random.rand(self.dim, self.dim).transpose())
 
-        X_intv = np.asarray([0] * int(N / 2) + [1] * int(N / 2))
-        # Y_intv = X_intv * DZ * DU2 * DU3
-        # X_intv = (X_intv+1)/2
-        Y_intv = np.round((inverse_logit(2 * U2 - 3 * Z) + (X_intv + U3) / 2) / 2, 0)
-        # Y_intv = (Y_intv + 1)/2
-        X_intv = intfy(X_intv)
-        Y_intv = intfy(Y_intv)
+        U1 = np.random.multivariate_normal(mu1, cov1, self.num_obs)
+        U2 = np.random.multivariate_normal(mu2, cov2, self.num_obs)
+        U3 = np.random.multivariate_normal(mu3, cov3, self.num_obs)
 
-        X_obs = np.asarray(X)
-        Y_obs = np.asarray(Y)
-        Z_obs = np.asarray(Z)
-        Obs = pd.DataFrame({'Z': Z_obs, 'X': X_obs, 'Y': Y_obs})
+        U1 = self.weird_projection(U1)
+        U2 = self.weird_projection(U2)
+        U3 = self.weird_projection(U3)
 
-        X_intv = np.asarray(X_intv)
-        Y_intv = np.asarray(Y_intv)
-        Intv = pd.DataFrame({'X': X_intv, 'Y': Y_intv, 'Z': Z_obs})
+        U1 = (U1 - np.mean(U1, axis=0)) / np.var(U1)
+        U2 = (U2 - np.mean(U2, axis=0)) / np.var(U2)
+        U3 = (U3 - np.mean(U3, axis=0)) / np.var(U3)
 
-        sample_indces_x1 = np.random.choice(list(range(0, int(N / 2))), int(Ns / 2), replace=False)
-        sample_indces_x0 = np.random.choice(list(range(int(N / 2), N)), int(Ns / 2), replace=False)
-        sample_indices = np.asarray(list(sample_indces_x1) + list(sample_indces_x0))
+        self.U1 = U1
+        self.U2 = U2
+        self.U3 = U3
 
-        X_sintv = X_intv[sample_indices]
-        Y_sintv = Y_intv[sample_indices]
-        Z_sintv = Z_obs[sample_indices]
-        Intv_S = pd.DataFrame({'X': X_sintv, 'Y': Y_sintv, 'Z': Z_sintv})
+    def gen_Z(self):
+        Z = np.exp(self.U1) + np.exp(self.U2)
+        self.Z = ((Z - np.mean(Z, axis=0)) / np.var(Z))
 
-        return Obs, Intv, Intv_S
+    def gen_X(self):
+        coef_xz = np.reshape(-1*np.random.rand(self.dim), (self.dim, 1))
+        coef_u1x = np.reshape(1*np.random.rand(self.dim), (self.dim, 1))
+        coef_u3x = np.reshape(-1*np.random.rand(self.dim), (self.dim, 1))
 
-    elif case_num == 3 or case_num == 31:
-        np.random.seed(seed_num)
-        U1 = np.random.normal(0, 20, N)
-        U2 = np.random.normal(0, 20, N)
-        U3 = np.random.normal(0, 20, N)
+        U1 = np.matrix(self.U1)
+        U3 = np.matrix(self.U3)
+        Z = np.matrix(self.Z)
 
-        Z = U1 + U2
-        X = intfy(np.round(inverse_logit(1 * Z - 1 * U1 + 1 * U3), 0))
-        Y = Z + U2 + U3 + 10 * X
+        X = np.exp(U1 * coef_u1x ) - (U3 * coef_u3x ) + np.abs(Z * coef_xz )
 
-        X_intv = intfy(np.asarray([0] * int(N / 2) + [1] * int(N / 2)))
-        Y_intv = Z + U2 + U3 + 10 * X_intv
+        X = ((X - np.mean(X, axis=0)) / np.var(X))
+        # print(X)
+        X = np.round(self.inverse_logit(X), 0)
+        self.X_obs = self.intfy(X)
+        self.X_intv = self.intfy(np.asarray([0] * int(self.num_obs / 2) +
+                                            [1] * int(self.num_obs / 2)))
 
-        X_obs = np.asarray(X)
-        Y_obs = np.asarray(Y)
-        Z_obs = np.asarray(Z)
-        Obs = pd.DataFrame({'Z': Z_obs, 'X': X_obs, 'Y': Y_obs})
+    def gen_Y(self):
+        coef_zy = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u2y = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u3y = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
 
-        X_intv = np.asarray(X_intv)
-        Y_intv = np.asarray(Y_intv)
-        Intv = pd.DataFrame({'X': X_intv, 'Y': Y_intv, 'Z': Z_obs})
+        U2 = np.matrix(self.U2)
+        U3 = np.matrix(self.U3)
+        Z = np.matrix(self.Z)
+        X_obs = np.matrix(self.X_obs)
+        X_intv = np.matrix(self.X_intv)
 
-        sample_indces_x1 = np.random.choice(list(range(0, int(N / 2))), int(Ns / 2), replace=False)
-        sample_indces_x0 = np.random.choice(list(range(int(N / 2), N)), int(Ns / 2), replace=False)
-        sample_indices = np.asarray(list(sample_indces_x1) + list(sample_indces_x0))
+        Y = np.array(np.sin(U2 * coef_u2y)) * \
+            np.array(-1*np.array(-200*np.tanh(U3 * coef_u3y)) +
+                     (np.array(X_obs.T))) * \
+            np.array(np.abs(Z * coef_zy + 1))
 
-        X_sintv = X_intv[sample_indices]
-        Y_sintv = Y_intv[sample_indices];
-        Z_sintv = Z_obs[sample_indices]
-        Intv_S = pd.DataFrame({'X': X_sintv, 'Y': Y_sintv, 'Z': Z_sintv})
+        self.Y = 100*((Y - np.mean(Y, axis=0)) / np.var(Y))
 
-        return Obs, Intv, Intv_S
+        Y_intv = np.array(np.sin(U2 * coef_u2y)) * \
+            np.array(-1 * np.array(-200 * np.tanh(U3 * coef_u3y)) +
+                     (np.array(X_intv.T))) * \
+            np.array(np.abs(Z * coef_zy + 1))
 
-    elif case_num == 4 or case_num == 41:
+        self.Y_intv = 100*((Y_intv - np.mean(Y, axis=0)) / np.var(Y))
 
-        # '''For Lin UCB'''
-        # np.random.seed(seed_num)
-        #
-        # mu1 = np.random.rand(dim)
-        # mu2 = np.random.rand(dim)
-        # mu3 = np.random.rand(dim)
-        # cov1 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
-        # cov2 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
-        # cov3 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
-        #
-        # coef_xz = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        # coef_u1x = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        # coef_u3x = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        # coef_zy = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        # coef_u2y = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        # coef_u3y = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        #
-        # U1 = np.random.multivariate_normal(mu1, cov1, N)
-        # U2 = np.random.multivariate_normal(mu2, cov2, N)
-        # U3 = np.random.multivariate_normal(mu3, cov3, N)
-        #
-        # Z = normalize(1 * U1 + 1 * U2)
-        # sample_indices_disc = np.random.choice(list(range(0, dim)), int(dim / 3), replace=False)
-        # Z_replace = np.random.binomial(1, 0.5, (N, len(sample_indices_disc)))
-        # Z[:, sample_indices_disc] = Z_replace
-        #
-        # X = intfy(np.round(
-        #     inverse_logit(normalize(np.matrix(Z) * coef_xz + np.matrix(U1) * coef_u1x + np.matrix(U3) * coef_u3x)), 0))
-        #
-        # Y_orig = np.array(np.matrix(Z) * coef_zy) + \
-        #          np.array(np.matrix(U2) * coef_u2y) + \
-        #          np.array(np.matrix(U3) * coef_u3y)
-        #
-        # Y_norm = (Y_orig - np.mean(Y_orig) )/np.std(Y_orig)
-        # Y = 1*Y_norm + np.reshape(1 * X, (N, 1))
-        #
-        # X_intv = intfy(np.asarray([0] * int(N / 2) + [1] * int(N / 2)))
-        # Y_intv = 1*Y_norm + np.reshape(1 * X_intv, (N, 1))
-
-        ########################################################################
-        ########################################################################
-        '''For Lin UCB'''
-        np.random.seed(seed_num)
-
-        mu1 = np.random.rand(dim)
-        mu2 = np.random.rand(dim)
-        mu3 = np.random.rand(dim)
-        cov1 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
-        cov2 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
-        cov3 = np.dot(np.random.rand(dim, dim), np.random.rand(dim, dim).transpose())
-
-        coef_xz = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        coef_u1x = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        coef_u3x = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        coef_zy = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        coef_u2y = np.reshape(1 * np.random.rand(dim), (dim, 1))
-        coef_u3y = np.reshape(1 * np.random.rand(dim), (dim, 1))
-
-        U1 = np.random.multivariate_normal(mu1, cov1, N)
-        U2 = np.random.multivariate_normal(mu2, cov2, N)
-        U3 = np.random.multivariate_normal(mu3, cov3, N)
-
-        Z = normalize(-1 * U1 + 1 * U2)
-        sample_indices_disc = np.random.choice(list(range(0, dim)), int(dim / 3), replace=False)
-        Z_replace = np.random.binomial(1, 0.5, (N, len(sample_indices_disc)))
-        Z[:, sample_indices_disc] = Z_replace
-
-        X = intfy(np.round(
-            inverse_logit(normalize(np.matrix(Z) * coef_xz + np.matrix(U1) * coef_u1x + np.matrix(U3) * coef_u3x)), 0))
-
-        Y_orig = np.array(np.matrix(Z) * coef_zy) + \
-                 np.array(np.matrix(U2) * coef_u2y) + \
-                 np.array(np.matrix(U3) * coef_u3y)
-
-        Y_norm = (Y_orig - np.mean(Y_orig) )/np.std(Y_orig)
-        # Y_norm = Y_orig
-        Y = 3*Y_norm + np.reshape(1 * X, (N, 1))
-
-        X_intv = intfy(np.asarray([0] * int(N / 2) + [1] * int(N / 2)))
-        Y_intv = 3*Y_norm + np.reshape(1 * X_intv, (N, 1))
+    def structure_data(self):
+        X = self.X_obs
+        X_intv = self.X_intv
+        Y = self.Y
+        Y_intv = self.Y_intv
+        Z = self.Z
 
         X_obs = np.asarray(X)
         Y_obs = np.asarray(Y)
@@ -176,10 +113,11 @@ def Data_generation(case_num, N, Ns, dim, seed_num = 123):
 
         Obs_XY = pd.concat([Obs_X, Obs_Y], axis=1)
         Obs_XY.columns = ['X', 'Y']
-        Obs_Z.columns = range(dim)
-        Obs = pd.concat([Obs_XY, Obs_Z], axis=1)
+        Obs_Z.columns = range(self.dim)
+        self.Obs = pd.concat([Obs_XY, Obs_Z], axis=1)
 
-        X_intv = np.asarray(X_intv);
+
+        X_intv = np.asarray(X_intv)
         Y_intv = np.asarray(Y_intv)
         Intv_X = pd.DataFrame(X_intv)
         Intv_Y = pd.DataFrame(Y_intv)
@@ -187,15 +125,15 @@ def Data_generation(case_num, N, Ns, dim, seed_num = 123):
 
         Intv_XY = pd.concat([Intv_X, Intv_Y], axis=1)
         Intv_XY.columns = ['X', 'Y']
-        Intv_Z.columns = range(dim)
-        Intv = pd.concat([Intv_XY, Intv_Z], axis=1)
+        Intv_Z.columns = range(self.dim)
+        self.Intv = pd.concat([Intv_XY, Intv_Z], axis=1)
 
-        sample_indces_x1 = np.random.choice(list(range(0, int(N / 2))), int(Ns / 2), replace=False)
-        sample_indces_x0 = np.random.choice(list(range(int(N / 2), N)), int(Ns / 2), replace=False)
+        sample_indces_x1 = np.random.choice(list(range(0, int(self.num_obs / 2))), int(self.num_intv / 2), replace=False)
+        sample_indces_x0 = np.random.choice(list(range(int(self.num_obs / 2), self.num_obs)), int(self.num_intv / 2), replace=False)
         sample_indices = np.asarray(list(sample_indces_x1) + list(sample_indces_x0))
 
         X_sintv = X_intv[sample_indices]
-        Y_sintv = Y_intv[sample_indices];
+        Y_sintv = Y_intv[sample_indices]
         Z_sintv = Z_obs[sample_indices]
         SIntv_X = pd.DataFrame(X_sintv)
         SIntv_Y = pd.DataFrame(Y_sintv)
@@ -203,7 +141,31 @@ def Data_generation(case_num, N, Ns, dim, seed_num = 123):
 
         SIntv_XY = pd.concat([SIntv_X, SIntv_Y], axis=1)
         SIntv_XY.columns = ['X', 'Y']
-        SIntv_Z.columns = range(dim)
-        Intv_S = pd.concat([SIntv_XY, SIntv_Z], axis=1)
+        SIntv_Z.columns = range(self.dim)
+        self.Intv_S = pd.concat([SIntv_XY, SIntv_Z], axis=1)
 
-        return Obs, Intv, Intv_S
+    def data_gen(self):
+        self.gen_U()
+        self.gen_Z()
+        self.gen_X()
+        self.gen_Y()
+        self.structure_data()
+
+
+
+
+
+# num_obs = 100
+# num_intv = 10
+# dim = 5
+# gen_data = Data_generaiton(num_obs, num_intv, dim)
+# gen_data.data_gen()
+#
+# X = gen_data.Y
+# f = plt.figure()
+# sp = f.add_subplot(111)
+# X_kde = [item for sublist in np.ndarray.tolist(X) for item in sublist]
+# orig_density = gaussian_kde(X_kde)
+# x_domain = np.linspace(min(X_kde) - abs(max(X_kde)), max(X_kde)+abs(max(X_kde)), num_obs)
+# sp.plot(x_domain, orig_density(x_domain))
+

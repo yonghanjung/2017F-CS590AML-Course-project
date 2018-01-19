@@ -92,9 +92,9 @@ else:
 mat_dim = dim+1 #including arm
 N = 10000
 # N = max(T*100,dim*200) # Number of data to be sampled (for accurate interventional effect)
-Ns = int(N/10) # Number of Ds
+Ns = int(N/20) # Number of Ds
 
-Obs, Intv, Intv_S =  Data_generation(case_num=case_num ,N=N,Ns=Ns,dim = dim,seed_num=2017)
+Obs, Intv, Intv_S =  Data_generation(case_num=case_num ,N=N,Ns=Ns,dim = dim,seed_num=1)
 
 obs_fit = linear_training(Obs[['X'] + list(range(dim)) ],Obs['Y'])
 obs_coef = obs_fit.coef_
