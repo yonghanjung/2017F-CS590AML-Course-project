@@ -19,7 +19,7 @@ class DataGen(object):
 
     # Seed fix
     # Some good seed are 1234, 12345.
-    np.random.seed(12345)
+    np.random.seed(123)
     def __init__(self,D,N,Ns,Mode):
         '''
         Initializing the class
@@ -93,7 +93,8 @@ class DataGen(object):
             Z = self.U1 + self.U2
         elif self.Mode == 'crazy':
             Z = np.exp(self.U1) + np.exp(self.U2)
-        self.Z = ((Z - np.mean(Z, axis=0)) / np.var(Z))
+        self.Z = Z
+        # self.Z = ((Z - np.mean(Z, axis=0)) / np.var(Z))
 
     def gen_X(self):
         coef_xz = np.reshape(-2 * np.random.rand(self.dim), (self.dim, 1))
@@ -226,56 +227,6 @@ class DP_sim(DataGen):
         self.dpintv = self.Fit(self.Y_intv)
         self.dpintv_s = self.Fit(self.Ysinv_x)
 
-class Graph(DP_sim):
-    def Graph_obs_int(self):
-        f = plt.figure()
-
-        X_obs = np.reshape(self.Y_x, (len(self.Y_x), 1))
-        X_obs = self.preprocess(X_obs)
-        obs_plot = f.add_subplot(211)
-        X_obs_kde = np.ndarray.flatten(X_obs)
-        obs_density = gaussian_kde(X_obs_kde )
-        x_domain_obs = np.linspace(min(X_obs_kde ) - abs(max(X_obs_kde )), max(X_obs_kde ) + abs(max(X_obs_kde)), self.num_obs)
-        obs_plot.plot(x_domain_obs, obs_density(x_domain_obs))
-        obs_plot.hist(X_obs, 100, normed=True)
-
-        X_int = np.reshape(self.Yinv_x, (len(self.Yinv_x), 1))
-        X_int = self.preprocess(X_int)
-        int_plot = f.add_subplot(212)
-        X_int_kde = np.ndarray.flatten(X_int)
-        intv_density = gaussian_kde(X_int_kde)
-        x_domain_int = x_domain_obs
-        int_plot.plot(x_domain_int, intv_density(x_domain_int))
-        int_plot.hist(X_int, 100, normed=True)
-        return f
-
-    def Graph_DPFit(self):
-        if self.Mode == 'easy':
-            print("Graph_DPFit method is only for 'crazy' mode")
-            raise MyError
-
-        f = plt.figure()
-
-        X_int = np.reshape(self.Yinv_x, (len(self.Yinv_x), 1))
-        X_int = self.preprocess(X_int)
-        int_plot = f.add_subplot(211)
-        X_int_kde = np.ndarray.flatten(X_int)
-        intv_density = gaussian_kde(X_int_kde)
-        x_domain_int = np.linspace(min(X_int_kde) - abs(max(X_int_kde)), max(X_int_kde) + abs(max(X_int_kde)),
-                                   self.num_obs)
-        int_plot.plot(x_domain_int, intv_density(x_domain_int))
-        int_plot.hist(X_int, 100, normed=True)
-
-        sim_plot = f.add_subplot(212)
-        X_sim = self.dpintv.sample(self.num_obs)[0]
-        X_sim = np.ndarray.flatten(X_sim)
-        # X_sim= [item for sublist in X_sim for item in sublist]
-        sim_density = gaussian_kde(X_sim)
-        # sim_x_domain = np.linspace(min(X_sim) - 5, max(X_sim) + 5, self.num_data)
-        sim_plot.plot(x_domain_int, sim_density(x_domain_int))
-        sim_plot.hist(X_sim, self.num_obs/100, normed=True)
-        return f
-
 class KL_computation():
     def KL_Gaussian(self, f_mean, f_std, g_mean, g_std):  # KL(f || g)
         return np.log(g_std / f_std) + \
@@ -388,9 +339,19 @@ class B_KLUCB(CausalBound):
         self.T = T # number of iteration of bandits
         self.K = K # number of arms
 
-    def CutArm(self):
-        # arm collection
-        ## arm collection for arm 0
+        self.mean_rewards = [
+            np.mean(self.Intv[self.Intv['X'] == 0]['Y']),
+            np.mean(self.Intv[self.Intv['X'] == 1]['Y'])
+        ]
+        self.opt_mean = max(self.mean_rewards)
+        self.opt_arm = np.argmax(self.mean_rewards)
+
+    def Compute_UBKL(self,f_mean,f_std,g_std,UB_KL_a):
+        M = ((UB_KL_a + 0.5 - np.log(g_std / f_std)) * 2 * (g_std** 2)) - f_std ** 2
+        upper = f_mean+ np.sqrt(M)
+        return upper
+
+    def Arm_extract(self):
         self.Set_x(x=0)
         bd_0 = self.ComputeBound()
         lb0 = bd_0[0]
@@ -402,86 +363,225 @@ class B_KLUCB(CausalBound):
         bd_1 = self.ComputeBound()
         lb1 = bd_1[0]
         ub1 = bd_1[2]
-        arm_1 = [lb1, ub1]
-        arms = [arm_0, arm_1]
 
         ## arm collection for lb and ub for each arms.
         l_arm = [lb0, lb1]
         u_arm = [ub0, ub1]
         l_max = np.max(l_arm)
 
+        self.l_max = l_max
+        self.u_arm = u_arm
+        self.causal_upper = u_arm
+        self.remain_arms = list(range(len(u_arm)))
+        self.K = len(self.remain_arms)
+
+    def CutArm(self):
+        self.Arm_extract()
         # Cutting arm
-        arms_new = dict()
-        l_arm_new = dict()
         u_arm_new = dict()
         arms_idx = list()
 
         for a in range(K):
             # cur arm condition
-            if u_arm[a] < l_max:
+            if self.u_arm[a] < self.l_max:
                 continue
             else:
-                arms_new[a] = arms[a]
-                l_arm_new[a] = l_arm[a]
-                u_arm_new[a] = u_arm[a]
+                u_arm_new[a] = self.u_arm[a]
                 arms_idx.append(a)
 
         # Declare remaing arms
-        self.arms = arms_new
-        self.l_arm = l_arm_new
-        self.u_arm = u_arm_new
-        self.armidx = arms_idx
-        self.K = len(self.armidx)
+        self.causal_upper = u_arm_new
+        self.remain_arms = arms_idx
+        self.K = len(self.remain_arms)
+
 
     def Receive_rewards(self,arm,num_armpull):
         pulling_idx = num_armpull[arm]-1
         return list(self.Intv[self.Intv['X']==arm]['Y'])[pulling_idx]
 
+    def Cum_regret(self, T, num_armpull):
+        sum_mu = 0
+        for a in self.remain_arms:
+            sum_mu += self.mean_rewards[a] * num_armpull[a]
+        return T*self.opt_mean - sum_mu
 
-    def Bandit_Init(self):
+    def Bandit_Init(self, Bandit_selection):
         '''
         Pulling each arm one time.
         :return:
         '''
-
-        Arm = []
-        Reward = []
-
+        self.Bandit_selection = Bandit_selection
+        if self.Bandit_selection == 'BKL':
+            self.CutArm()
+        else:
+            self.Arm_extract()
         num_armpull = dict()
-        reward_armpull = dict()
-        for a in self.armidx:
-            # initial arm pull
-            num_armpull[a] = 1
-            reward_armpull[a] = [self.Receive_rewards(a,num_armpull)]
-        
+        for a in self.remain_arms:
+            num_armpull[a] = 0
+
+        atlist = []
+        rtlist = []
+        cum_regret_list = []
+        prob_opt_list = []
+
+        for t in self.remain_arms:
+            at = t
+            atlist.append(at)
+            num_armpull[at] += 1
+
+            rt = self.Receive_rewards(at,num_armpull)
+            rtlist.append(rt)
+            cum_regret_list.append(  self.Cum_regret(t,num_armpull) )
+
+        prob_opt_list.append(num_armpull[self.opt_arm] / self.K)
+
+        self.atlist = atlist
+        self.rtlist = rtlist
+        self.num_armpull = num_armpull
+        self.cum_regret_list = cum_regret_list
+        self.prob_opt_list = prob_opt_list
 
 
-
-
-    def Bandit(self):
-        self.CutArm()
-        if len(self.armidx) == 1:
-            return self.armidx
+    def BKL_Bandit(self, Bandit_selection):
+        self.Bandit_Init(Bandit_selection)
+        if len(self.remain_arms) == 1:
+            print("Only 1 remaining arm")
+            return self.remain_arms[0]
 
         else:
-            self.Bandit_Init()
+            ft = lambda x: np.log(x) + 3 * np.log(np.log(x))
+            cum_regret_list = []
+
+            for t in range(self.K, self.T):
+                UB = []
+                for a in self.remain_arms:
+                    ubKL = ft(t)/self.num_armpull[a]
+                    at_rt_match = pd.DataFrame({'at':self.atlist, 'rt':self.rtlist})
+                    at_rt_match_a = at_rt_match[at_rt_match['at']==a]['rt']
+                    mu_accum_a = np.mean(at_rt_match_a)
+                    std_accum_a = np.std(at_rt_match_a)
+                    BKL_a = self.Compute_UBKL(mu_accum_a,std_accum_a,std_accum_a,ubKL)
+                    # print(BKL_a,t )
+                    # print(CU_a, BKL_a)
+                    if self.Bandit_selection == 'BKL':
+                        CU_a = self.causal_upper[a]
+                        UB_a = min(CU_a, BKL_a)
+                    else:
+                        UB_a = BKL_a
+                    UB.append(UB_a)
+                at = self.remain_arms[np.argmax(UB)]
+                self.atlist.append(at)
+                self.num_armpull[at] += 1
+
+                rt = self.Receive_rewards(at,self.num_armpull)
+                self.rtlist.append(rt)
+
+                self.cum_regret_list.append(self.Cum_regret(t,self.num_armpull))
+
+                self.prob_opt_list.append( self.num_armpull[self.opt_arm] / (t+1) )
+
+            return self.atlist, self.rtlist, self.cum_regret_list, self.prob_opt_list
+
+    # def Set_Bandit(self, Bandit_selection):
+    #     self.Bandit_selection = Bandit_selection
+    #     self.BKL_Bandit()
 
 
 
+class Graph(B_KLUCB):
+    def Graph_obs_int(self):
+        f = plt.figure()
 
+        X_obs = np.reshape(self.Y_x, (len(self.Y_x), 1))
+        X_obs = self.preprocess(X_obs)
+        obs_plot = f.add_subplot(211)
+        X_obs_kde = np.ndarray.flatten(X_obs)
+        obs_density = gaussian_kde(X_obs_kde)
+        x_domain_obs = np.linspace(min(X_obs_kde) - abs(max(X_obs_kde)), max(X_obs_kde) + abs(max(X_obs_kde)),
+                                   self.num_obs)
+        obs_plot.plot(x_domain_obs, obs_density(x_domain_obs))
+        obs_plot.hist(X_obs, 100, normed=True)
 
+        X_int = np.reshape(self.Yinv_x, (len(self.Yinv_x), 1))
+        X_int = self.preprocess(X_int)
+        int_plot = f.add_subplot(212)
+        X_int_kde = np.ndarray.flatten(X_int)
+        intv_density = gaussian_kde(X_int_kde)
+        x_domain_int = x_domain_obs
+        int_plot.plot(x_domain_int, intv_density(x_domain_int))
+        int_plot.hist(X_int, 100, normed=True)
+        return f
+
+    def Graph_DPFit(self):
+        if self.Mode == 'easy':
+            print("Graph_DPFit method is only for 'crazy' mode")
+            raise MyError
+
+        f = plt.figure()
+
+        X_int = np.reshape(self.Yinv_x, (len(self.Yinv_x), 1))
+        X_int = self.preprocess(X_int)
+        int_plot = f.add_subplot(211)
+        X_int_kde = np.ndarray.flatten(X_int)
+        intv_density = gaussian_kde(X_int_kde)
+        x_domain_int = np.linspace(min(X_int_kde) - abs(max(X_int_kde)), max(X_int_kde) + abs(max(X_int_kde)),
+                                   self.num_obs)
+        int_plot.plot(x_domain_int, intv_density(x_domain_int))
+        int_plot.hist(X_int, 100, normed=True)
+
+        sim_plot = f.add_subplot(212)
+        X_sim = self.dpintv.sample(self.num_obs)[0]
+        X_sim = np.ndarray.flatten(X_sim)
+        # X_sim= [item for sublist in X_sim for item in sublist]
+        sim_density = gaussian_kde(X_sim)
+        # sim_x_domain = np.linspace(min(X_sim) - 5, max(X_sim) + 5, self.num_data)
+        sim_plot.plot(x_domain_int, sim_density(x_domain_int))
+        sim_plot.hist(X_sim, self.num_obs / 100, normed=True)
+        return f
+
+    def Graph_Bandit(self):
+        self.BKL_Bandit('BKL')
+        atlist_BKL, rtlist_BKL, cum_regret_list_BKL, prob_opt_list_BKL = self.BKL_Bandit('BKL')
+        self.BKL_Bandit('KL')
+        atlist_KL, rtlist_KL, cum_regret_list_KL, prob_opt_list_KL = self.BKL_Bandit('KL')
+
+        f_cumregret = plt.figure()
+        cum_regret_BKL_plot = f_cumregret.add_subplot(211)
+        cum_regret_BKL_plot.set_title('BKL_cum_regret')
+        cum_regret_BKL_plot.plot(cum_regret_list_BKL)
+
+        cum_regret_KL_plot = f_cumregret.add_subplot(212)
+        cum_regret_KL_plot.set_title('KL_cum_regret')
+        cum_regret_KL_plot.plot(cum_regret_list_KL)
+
+        f_probopt = plt.figure()
+        prob_opt_BKL_plot = f_probopt.add_subplot(211)
+        prob_opt_BKL_plot.set_title('BKL_prob_opt')
+        prob_opt_BKL_plot.plot(prob_opt_list_BKL)
+
+        prob_opt_KL_plot = f_probopt.add_subplot(212)
+        prob_opt_KL_plot.set_title('KL_prob_opt')
+        prob_opt_KL_plot.plot(prob_opt_list_KL)
+
+        return f_cumregret, f_probopt
 
 
 #################### MAIN ############################
 D = 3
-N = 1000
+N = 5000
 Ns = 500
 Mode = 'easy'
 x = 0
-T = 1000
+T = 2000
 K = 2
-bkl = B_KLUCB(D,N,Ns,Mode,T,K)
-graph = Graph(D,N,Ns,Mode,x)
+# bkl = B_KLUCB(D,N,Ns,Mode,T,K)
+# result = bkl.BKL_Bandit()
+
+graph = Graph(D,N,Ns,Mode,T,K)
+graph.Graph_Bandit()
+
+
+
 # result, lower, upper = cb.ComputeBound()
 # cb.Graph_obs_int()
 # cb.Graph_DPFit()
