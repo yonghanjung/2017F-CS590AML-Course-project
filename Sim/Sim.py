@@ -132,9 +132,9 @@ class DataGen(object):
                 ## Case 2: constant to 1.5
                 ## Case 1: constant to 2
             Y = normalize( U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy ) + \
-                3 * np.array(X_obs.T)
+                1 * np.array(X_obs.T)
             Y_intv = normalize(U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy) + \
-                3 * np.array(X_intv.T)
+                1 * np.array(X_intv.T)
 
         elif self.Mode == 'crazy':
             Y = np.array(np.sin(U2 * coef_u2y)) * \
