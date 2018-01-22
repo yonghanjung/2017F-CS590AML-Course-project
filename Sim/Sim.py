@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn import mixture
 from scipy.stats import gaussian_kde
 from scipy.optimize import minimize
+from sklearn.preprocessing import normalize
 
 class MyError(Exception):
     pass
@@ -19,7 +20,7 @@ class DataGen(object):
 
     # Seed fix
     # Some good seed are 1234, 12345.
-    np.random.seed(123)
+    np.random.seed(12345)
     def __init__(self,D,N,Ns,Mode):
         '''
         Initializing the class
@@ -93,24 +94,23 @@ class DataGen(object):
             Z = self.U1 + self.U2
         elif self.Mode == 'crazy':
             Z = np.exp(self.U1) + np.exp(self.U2)
-        self.Z = Z
         # self.Z = ((Z - np.mean(Z, axis=0)) / np.var(Z))
+        self.Z = normalize(Z)
 
     def gen_X(self):
-        coef_xz = np.reshape(-2 * np.random.rand(self.dim), (self.dim, 1))
-        coef_u1x = np.reshape(2 * np.random.rand(self.dim), (self.dim, 1))
-        coef_u3x = np.reshape(-2 * np.random.rand(self.dim), (self.dim, 1))
+        coef_xz = np.reshape(-1 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u1x = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u3x = np.reshape(-1 * np.random.rand(self.dim), (self.dim, 1))
 
         U1 = np.matrix(self.U1)
         U3 = np.matrix(self.U3)
         Z = np.matrix(self.Z)
 
         if self.Mode == 'easy':
-            self.X_obs = self.intfy(  np.round( sp.expit(Z*coef_xz + U3 * coef_u3x + U1 * coef_u1x), 0) )
+            self.X_obs = self.intfy( np.round( normalize(sp.expit( Z*coef_xz - U3 * coef_u3x - U1 * coef_u1x)) , 0) )
         elif self.Mode == 'crazy':
             X = np.exp(U1 * coef_u1x) - (U3 * coef_u3x) + np.abs(Z * coef_xz)
-            X = np.round(  ((X - np.mean(X, axis=0)) / np.var(X)), 0)
-
+            X = np.round( normalize(X), 0)
             self.X_obs = self.intfy(X)
         self.X_intv = self.intfy(np.asarray([0] * int(self.num_obs / 2) +
                                             [1] * int(self.num_obs / 2)))
@@ -127,8 +127,11 @@ class DataGen(object):
         X_intv = np.matrix(self.X_intv)
 
         if self.Mode == 'easy':
-            Y = U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy + np.array(X_obs.T)
-            Y_intv = U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy + np.array(X_intv.T)
+            Y = normalize( U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy ) + \
+                2 * np.array(X_obs.T)
+            Y_intv = normalize(U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy) + \
+                2 * np.array(X_intv.T)
+
         elif self.Mode == 'crazy':
             Y = np.array(np.sin(U2 * coef_u2y)) * \
                 np.array(-1 * np.array(-50 * np.tanh(U3 * coef_u3y)) +
@@ -138,8 +141,8 @@ class DataGen(object):
                      np.array(-1 * np.array(-70 * np.tanh(U3 * coef_u3y)) +
                               (np.array(X_intv.T))) * \
                      np.array(np.abs(Z * coef_zy + 1))
-        self.Y = 100 * ((Y - np.mean(Y, axis=0)) / np.var(Y))
-        self.Y_intv = 100 * ((Y_intv - np.mean(Y, axis=0)) / np.var(Y))
+        self.Y = ((Y - np.mean(Y, axis=0)) / np.var(Y))
+        self.Y_intv = ((Y_intv - np.mean(Y, axis=0)) / np.var(Y))
 
     def structure_data(self):
         X = self.X_obs
@@ -331,7 +334,7 @@ class B_KLUCB(CausalBound):
     '''
     Currently this class is only applicable for 'easy' mode
     '''
-    def __init__(self, D,N,Ns,Mode,T, K):
+    def __init__(self, D,N,Ns,Mode,T, K,x):
         super().__init__(D, N, Ns, Mode, x)
         if self.Mode == 'crazy':
             print("Crazy mode is not allowed")
@@ -374,6 +377,17 @@ class B_KLUCB(CausalBound):
         self.causal_upper = u_arm
         self.remain_arms = list(range(len(u_arm)))
         self.K = len(self.remain_arms)
+
+    def Param_determine(self):
+        self.Arm_extract()
+        non_opt_arm = np.abs(self.opt_arm - 1)
+        hx = self.u_arm[non_opt_arm]
+        if hx < self.l_max:
+            return 1
+        elif hx >= self.l_max and hx < self.opt_mean:
+            return 2
+        else:
+            return 3
 
     def CutArm(self):
         self.Arm_extract()
@@ -446,11 +460,41 @@ class B_KLUCB(CausalBound):
         self.Bandit_Init(Bandit_selection)
         if len(self.remain_arms) == 1:
             print("Only 1 remaining arm")
-            return self.remain_arms[0]
+
+            ft = lambda x: np.log(x) + 3 * np.log(np.log(x))
+
+            for t in range(self.K,self.T):
+                UB = []
+                for a in self.remain_arms:
+                    ubKL = ft(t) / self.num_armpull[a]
+                    at_rt_match = pd.DataFrame({'at': self.atlist, 'rt': self.rtlist})
+                    at_rt_match_a = at_rt_match[at_rt_match['at'] == a]['rt']
+                    mu_accum_a = np.mean(at_rt_match_a)
+                    std_accum_a = np.std(at_rt_match_a)
+                    BKL_a = self.Compute_UBKL(mu_accum_a, std_accum_a, std_accum_a, ubKL)
+                    # print(BKL_a,t )
+                    # print(CU_a, BKL_a)
+                    if self.Bandit_selection == 'BKL':
+                        CU_a = self.causal_upper[a]
+                        UB_a = min(CU_a, BKL_a)
+                    else:
+                        UB_a = BKL_a
+                    UB.append(UB_a)
+                at = self.remain_arms[np.argmax(UB)]
+                self.atlist.append(at)
+                self.num_armpull[at] += 1
+
+                rt = self.Receive_rewards(at, self.num_armpull)
+                self.rtlist.append(rt)
+
+                self.cum_regret_list.append(self.Cum_regret(t, self.num_armpull))
+
+                self.prob_opt_list.append(self.num_armpull[self.opt_arm] / (t + 1))
+
+            return self.atlist, self.rtlist, self.cum_regret_list, self.prob_opt_list
 
         else:
             ft = lambda x: np.log(x) + 3 * np.log(np.log(x))
-            cum_regret_list = []
 
             for t in range(self.K, self.T):
                 UB = []
@@ -481,10 +525,6 @@ class B_KLUCB(CausalBound):
                 self.prob_opt_list.append( self.num_armpull[self.opt_arm] / (t+1) )
 
             return self.atlist, self.rtlist, self.cum_regret_list, self.prob_opt_list
-
-    # def Set_Bandit(self, Bandit_selection):
-    #     self.Bandit_selection = Bandit_selection
-    #     self.BKL_Bandit()
 
 
 
@@ -545,39 +585,44 @@ class Graph(B_KLUCB):
         self.BKL_Bandit('KL')
         atlist_KL, rtlist_KL, cum_regret_list_KL, prob_opt_list_KL = self.BKL_Bandit('KL')
 
-        f_cumregret = plt.figure()
-        cum_regret_BKL_plot = f_cumregret.add_subplot(211)
-        cum_regret_BKL_plot.set_title('BKL_cum_regret')
-        cum_regret_BKL_plot.plot(cum_regret_list_BKL)
+        f = plt.figure()
+        cum_regret_plot = f.add_subplot(211)
+        cum_regret_plot.set_title('Cum_regret')
+        cum_regret_plot.plot(cum_regret_list_BKL,label='BKL')
+        cum_regret_plot.plot(cum_regret_list_KL, label='KL')
+        cum_regret_plot.legend(loc='upper right')
 
-        cum_regret_KL_plot = f_cumregret.add_subplot(212)
-        cum_regret_KL_plot.set_title('KL_cum_regret')
-        cum_regret_KL_plot.plot(cum_regret_list_KL)
+        prob_opt_plot = f.add_subplot(212, sharex=cum_regret_plot)
+        prob_opt_plot.set_title('Prob opt')
+        prob_opt_plot.plot(prob_opt_list_BKL, label='BKL')
+        prob_opt_plot.plot(prob_opt_list_KL, label='KL')
+        prob_opt_plot.legend(loc='upper right')
 
-        f_probopt = plt.figure()
-        prob_opt_BKL_plot = f_probopt.add_subplot(211)
-        prob_opt_BKL_plot.set_title('BKL_prob_opt')
-        prob_opt_BKL_plot.plot(prob_opt_list_BKL)
-
-        prob_opt_KL_plot = f_probopt.add_subplot(212)
-        prob_opt_KL_plot.set_title('KL_prob_opt')
-        prob_opt_KL_plot.plot(prob_opt_list_KL)
-
-        return f_cumregret, f_probopt
+        return f
 
 
 #################### MAIN ############################
-D = 3
-N = 5000
+D = 100
+N = 10000
 Ns = 500
 Mode = 'easy'
 x = 0
-T = 2000
+T = 5000
 K = 2
-# bkl = B_KLUCB(D,N,Ns,Mode,T,K)
-# result = bkl.BKL_Bandit()
+bkl = B_KLUCB(D,N,Ns,Mode,T,K,x)
+param_case = bkl.Param_determine()
+hx = bkl.u_arm[np.abs(bkl.opt_arm-1)]
+u_star = bkl.opt_mean
 
-graph = Graph(D,N,Ns,Mode,T,K)
+print("Param case", param_case)
+print("hx, lmax, u*", hx, bkl.l_max, bkl.opt_mean )
+
+print("u_arm",bkl.u_arm)
+print("count x=0",len(bkl.Obs['X'][bkl.Obs['X']==0]))
+print("count x=1",len(bkl.Obs['X'][bkl.Obs['X']==1]))
+# # result = bkl.BKL_Bandit()
+#
+graph = Graph(D,N,Ns,Mode,T,K,x)
 graph.Graph_Bandit()
 
 
