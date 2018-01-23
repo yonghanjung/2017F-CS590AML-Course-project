@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e886f88e-af77-479c-8cab-e301368e052e" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Sim/Sim.py" afterPath="$PROJECT_DIR$/Sim/Sim.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/CausalBound/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/KL_GMM/KL_GMM.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/KL_GMM/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Sim/Sim.py" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -11,45 +15,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="DockManager">
-    <window id="2">
-      <content type="file-editors">
-        <state>
-          <leaf>
-            <file leaf-file-name="Data_generation.py" pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/Data_generation.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="2920">
-                    <caret line="146" column="23" lean-forward="true" selection-start-line="146" selection-start-column="23" selection-end-line="146" selection-end-column="23" />
-                    <folding>
-                      <element signature="e#0#18#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-            <file leaf-file-name="UCB.py" pinned="false" current-in-tab="false">
-              <entry file="file://$PROJECT_DIR$/Bandit/UCB.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="2067">
-                    <caret line="137" column="0" lean-forward="true" selection-start-line="137" selection-start-column="0" selection-end-line="137" selection-end-column="0" />
-                    <folding />
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
-  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Sim.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Sim/Sim.py">
+      <file leaf-file-name="Param1.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Sim/Param1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="353">
-              <caret line="136" column="18" lean-forward="false" selection-start-line="136" selection-start-column="18" selection-end-line="136" selection-end-column="18" />
+            <state relative-caret-position="12420">
+              <caret line="621" column="0" lean-forward="true" selection-start-line="621" selection-start-column="0" selection-end-line="621" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -130,13 +102,16 @@
         <option value="$PROJECT_DIR$/causal_bound_simulation/causal_bound_simulation.py" />
         <option value="$PROJECT_DIR$/Bandit/B-KL-UCB.py" />
         <option value="$PROJECT_DIR$/Sim/Sim.py" />
+        <option value="$PROJECT_DIR$/Sim/Param1.py" />
+        <option value="$PROJECT_DIR$/Sim/Param2.py" />
+        <option value="$PROJECT_DIR$/Sim/Param3.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="170" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="29" />
     <option name="y" value="23" />
-    <option name="width" value="1280" />
+    <option name="width" value="1411" />
     <option name="height" value="877" />
   </component>
   <component name="ProjectView">
@@ -165,42 +140,12 @@
             <path>
               <item name="Project" type="b2602c69:ProjectViewProjectNode" />
               <item name="Project" type="462c0819:PsiDirectoryNode" />
-              <item name="Bandit" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Project" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Project" type="462c0819:PsiDirectoryNode" />
-              <item name="Case1" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Project" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Project" type="462c0819:PsiDirectoryNode" />
               <item name="Case3" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Project" type="b2602c69:ProjectViewProjectNode" />
               <item name="Project" type="462c0819:PsiDirectoryNode" />
-              <item name="Case4" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Project" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Project" type="462c0819:PsiDirectoryNode" />
-              <item name="causal_bound_simulation" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Project" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Project" type="462c0819:PsiDirectoryNode" />
-              <item name="CausalBound" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Project" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Project" type="462c0819:PsiDirectoryNode" />
               <item name="DP" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Project" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Project" type="462c0819:PsiDirectoryNode" />
-              <item name="KL_GMM" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Project" type="b2602c69:ProjectViewProjectNode" />
@@ -337,13 +282,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="29" y="23" width="1411" height="877" extended-state="6" />
+    <frame x="29" y="23" width="1411" height="877" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11835577" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="true" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36428064" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36428064" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32919255" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -369,9 +315,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Case1/case1_causal_bounds.py" />
-    <entry file="file://$PROJECT_DIR$/Case1/case1_data.py" />
-    <entry file="file://$PROJECT_DIR$/Case1/Case1-1/case_1_data.py" />
     <entry file="file://$PROJECT_DIR$/Case1/Case1-1/case1_data.py" />
     <entry file="file://$PROJECT_DIR$/Case1/Case1-1/case1_causal_bounds.py" />
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/pandas/core/frame.py">
@@ -545,14 +488,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Causal_bound.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="269" column="43" lean-forward="true" selection-start-line="269" selection-start-column="43" selection-end-line="269" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/causal_bound_simulation/causal_bound_simulation.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="275">
@@ -635,8 +570,24 @@
         <state relative-caret-position="216">
           <caret line="25" column="0" lean-forward="true" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Sim/Sim.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2643">
+          <caret line="638" column="0" lean-forward="true" selection-start-line="638" selection-start-column="0" selection-end-line="638" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Bandit/UCB.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="247">
+          <caret line="46" column="26" lean-forward="true" selection-start-line="46" selection-start-column="26" selection-end-line="46" selection-end-column="26" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -648,28 +599,48 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Bandit/UCB.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2067">
-          <caret line="137" column="0" lean-forward="true" selection-start-line="137" selection-start-column="0" selection-end-line="137" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Data_generation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2920">
-          <caret line="146" column="23" lean-forward="true" selection-start-line="146" selection-start-column="23" selection-end-line="146" selection-end-column="23" />
+        <state relative-caret-position="240">
+          <caret line="12" column="22" lean-forward="true" selection-start-line="12" selection-start-column="22" selection-end-line="12" selection-end-column="22" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Sim/Sim.py">
+    <entry file="file://$PROJECT_DIR$/Sim/Param3.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="353">
-          <caret line="136" column="18" lean-forward="false" selection-start-line="136" selection-start-column="18" selection-end-line="136" selection-end-column="18" />
+        <state relative-caret-position="592">
+          <caret line="632" column="0" lean-forward="true" selection-start-line="632" selection-start-column="0" selection-end-line="632" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Sim/Param2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="218">
+          <caret line="613" column="24" lean-forward="false" selection-start-line="613" selection-start-column="24" selection-end-line="613" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Causal_bound.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5193">
+          <caret line="267" column="26" lean-forward="true" selection-start-line="267" selection-start-column="26" selection-end-line="267" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Sim/Param1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12420">
+          <caret line="621" column="0" lean-forward="true" selection-start-line="621" selection-start-column="0" selection-end-line="621" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

@@ -43,9 +43,9 @@ class DataGen(object):
 
     def intfy(self,W):
         '''
-        Transform the real-number array (e.g., 1.0,2.0) to 
-        the integer array (e.g., 1, 2).  
-        :param W: Real-number array 
+        Transform the real-number array (e.g., 1.0,2.0) to
+        the integer array (e.g., 1, 2).
+        :param W: Real-number array
         :return: Integer array
         '''
         return np.array(list(map(int, W)))
@@ -132,9 +132,9 @@ class DataGen(object):
                 ## Case 2: constant to 1.5
                 ## Case 1: constant to 2
             Y = normalize( U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy ) + \
-                -1 * np.array(X_obs.T)
+                3 * np.array(X_obs.T)
             Y_intv = normalize(U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy) + \
-                -1 * np.array(X_intv.T)
+                3 * np.array(X_intv.T)
 
         elif self.Mode == 'crazy':
             Y = np.array(np.sin(U2 * coef_u2y)) * \
@@ -628,9 +628,8 @@ print("u_arm",bkl.u_arm)
 print("count x=0",len(bkl.Obs['X'][bkl.Obs['X']==0]))
 print("count x=1",len(bkl.Obs['X'][bkl.Obs['X']==1]))
 
-# graph = Graph(D,N,Ns,Mode,T,K,x)
-# graph.Graph_Bandit()
-
+graph = Graph(D,N,Ns,Mode,T,K,x)
+graph.Graph_Bandit()
 
 
 
