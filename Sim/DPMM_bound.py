@@ -20,7 +20,7 @@ class DataGen(object):
 
     # Seed fix
     # Some good seed are 1234, 12345.
-    np.random.seed(123)
+    np.random.seed(12345)
     def __init__(self,D,N,Ns,Mode):
         '''
         Initializing the class
