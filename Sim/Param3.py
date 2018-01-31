@@ -497,7 +497,13 @@ class B_KLUCB(CausalBound):
 
             self.prob_opt_list.append( self.num_armpull[self.opt_arm] / (t+1) )
 
-        return self.atlist, self.rtlist, self.cum_regret_list, self.prob_opt_list
+        bandit_output = dict()
+        bandit_output['at'] = self.atlist
+        bandit_output['rt'] = self.rtlist
+        bandit_output['cum_regret'] = self.cum_regret_list
+        bandit_output['prob_opt'] = self.prob_opt_list
+
+        return bandit_output
 
     def UCB(self,Bandit_selection):
         self.Bandit_Init(Bandit_selection)
@@ -521,7 +527,13 @@ class B_KLUCB(CausalBound):
 
             self.prob_opt_list.append(self.num_armpull[self.opt_arm] / (t + 1))
 
-        return self.atlist, self.rtlist, self.cum_regret_list, self.prob_opt_list
+        bandit_output = dict()
+        bandit_output['at'] = self.atlist
+        bandit_output['rt'] = self.rtlist
+        bandit_output['cum_regret'] = self.cum_regret_list
+        bandit_output['prob_opt'] = self.prob_opt_list
+
+        return bandit_output
 
 
 class Graph(B_KLUCB):
@@ -579,24 +591,24 @@ class Graph(B_KLUCB):
 
     def Graph_Bandit(self):
         print("BKL running...")
-        atlist_BKL, rtlist_BKL, cum_regret_list_BKL, prob_opt_list_BKL = self.BKL_Bandit('BKL')
+        result_BKL = self.BKL_Bandit('BKL')
         print("KL running...")
-        atlist_KL, rtlist_KL, cum_regret_list_KL, prob_opt_list_KL = self.BKL_Bandit('KL')
+        result_KL = self.BKL_Bandit('KL')
         # print("UCB running...")
         # atlist_UCB, rtlist_UCB, cum_regret_list_UCB, prob_opt_list_UCB = self.UCB('UCB')
 
         f = plt.figure()
         cum_regret_plot = f.add_subplot(211)
         cum_regret_plot.set_title('Cum_regret')
-        cum_regret_plot.plot(cum_regret_list_BKL,label='BKL',color='r')
-        cum_regret_plot.plot(cum_regret_list_KL, label='KL',color='g')
+        cum_regret_plot.plot(result_BKL['cum_regret'],label='BKL',color='r')
+        cum_regret_plot.plot(result_KL['cum_regret'], label='KL',color='g')
         # cum_regret_plot.plot(cum_regret_list_UCB, label='UCB',color='b')
         cum_regret_plot.legend(loc='upper right')
 
         prob_opt_plot = f.add_subplot(212, sharex=cum_regret_plot)
         prob_opt_plot.set_title('Prob opt')
-        prob_opt_plot.plot(prob_opt_list_BKL, label='BKL',color='r')
-        prob_opt_plot.plot(prob_opt_list_KL, label='KL',color='g')
+        prob_opt_plot.plot(result_BKL['prob_opt'], label='BKL',color='r')
+        prob_opt_plot.plot(result_KL['prob_opt'], label='KL',color='g')
         # prob_opt_plot.plot(prob_opt_list_UCB, label='UCB',color='b')
         prob_opt_plot.legend(loc='upper right')
 

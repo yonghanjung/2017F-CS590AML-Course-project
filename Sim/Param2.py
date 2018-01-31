@@ -20,7 +20,7 @@ class DataGen(object):
 
     # Seed fix
     # Some good seed are 1234, 12345.
-    np.random.seed(12345)
+    np.random.seed(1234)
     def __init__(self,D,N,Ns,Mode):
         '''
         Initializing the class
@@ -98,9 +98,9 @@ class DataGen(object):
         self.Z = normalize(Z)
 
     def gen_X(self):
-        coef_xz = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
-        coef_u1x = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
-        coef_u3x = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
+        coef_xz = np.reshape(-2 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u1x = np.reshape(5 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u3x = np.reshape(-5 * np.random.rand(self.dim), (self.dim, 1))
 
         U1 = np.matrix(self.U1)
         U3 = np.matrix(self.U3)
@@ -116,9 +116,9 @@ class DataGen(object):
                                             [1] * int(self.num_obs / 2)))
 
     def gen_Y(self):
-        coef_zy = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
-        coef_u2y = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
-        coef_u3y = np.reshape(1 * np.random.rand(self.dim), (self.dim, 1))
+        coef_zy = np.reshape(-1 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u2y = np.reshape(2 * np.random.rand(self.dim), (self.dim, 1))
+        coef_u3y = np.reshape(-3 * np.random.rand(self.dim), (self.dim, 1))
 
         U2 = np.matrix(self.U2)
         U3 = np.matrix(self.U3)
@@ -131,10 +131,10 @@ class DataGen(object):
                 ## Case 3: constant to 1
                 ## Case 2: constant to 1.5
                 ## Case 1: constant to 2
-            Y = normalize( U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy ) + \
-                -1 * np.array(X_obs.T)
+            Y = normalize( U2 * coef_u2y - U3 * coef_u3y - Z * coef_zy ) + \
+                - 2.5 * np.array(X_obs.T)
             Y_intv = normalize(U2 * coef_u2y + U3 * coef_u3y + Z * coef_zy) + \
-                -1 * np.array(X_intv.T)
+                - 2.5 * np.array(X_intv.T)
 
         elif self.Mode == 'crazy':
             Y = np.array(np.sin(U2 * coef_u2y)) * \
@@ -147,8 +147,8 @@ class DataGen(object):
                      np.array(np.abs(Z * coef_zy + 1))
         # self.Y = Y
         # self.Y_intv = Y_intv
-        self.Y = 1*((Y - np.mean(Y, axis=0)) / np.var(Y))
-        self.Y_intv = 1*((Y_intv - np.mean(Y, axis=0)) / np.var(Y))
+        self.Y = 5*((Y - np.mean(Y, axis=0)) / np.var(Y))
+        self.Y_intv = 5*((Y_intv - np.mean(Y, axis=0)) / np.var(Y))
 
     def structure_data(self):
         X = self.X_obs
@@ -497,7 +497,13 @@ class B_KLUCB(CausalBound):
 
             self.prob_opt_list.append( self.num_armpull[self.opt_arm] / (t+1) )
 
-        return self.atlist, self.rtlist, self.cum_regret_list, self.prob_opt_list
+        bandit_output = dict()
+        bandit_output['at'] = self.atlist
+        bandit_output['rt'] = self.rtlist
+        bandit_output['cum_regret'] = self.cum_regret_list
+        bandit_output['prob_opt'] = self.prob_opt_list
+
+        return bandit_output
 
     def UCB(self,Bandit_selection):
         self.Bandit_Init(Bandit_selection)
@@ -521,7 +527,13 @@ class B_KLUCB(CausalBound):
 
             self.prob_opt_list.append(self.num_armpull[self.opt_arm] / (t + 1))
 
-        return self.atlist, self.rtlist, self.cum_regret_list, self.prob_opt_list
+        bandit_output = dict()
+        bandit_output['at'] = self.atlist
+        bandit_output['rt'] = self.rtlist
+        bandit_output['cum_regret'] = self.cum_regret_list
+        bandit_output['prob_opt'] = self.prob_opt_list
+
+        return bandit_output
 
 
 class Graph(B_KLUCB):
@@ -579,24 +591,24 @@ class Graph(B_KLUCB):
 
     def Graph_Bandit(self):
         print("BKL running...")
-        atlist_BKL, rtlist_BKL, cum_regret_list_BKL, prob_opt_list_BKL = self.BKL_Bandit('BKL')
+        result_BKL = self.BKL_Bandit('BKL')
         print("KL running...")
-        atlist_KL, rtlist_KL, cum_regret_list_KL, prob_opt_list_KL = self.BKL_Bandit('KL')
+        result_KL = self.BKL_Bandit('KL')
         # print("UCB running...")
         # atlist_UCB, rtlist_UCB, cum_regret_list_UCB, prob_opt_list_UCB = self.UCB('UCB')
 
         f = plt.figure()
         cum_regret_plot = f.add_subplot(211)
         cum_regret_plot.set_title('Cum_regret')
-        cum_regret_plot.plot(cum_regret_list_BKL,label='BKL',color='r')
-        cum_regret_plot.plot(cum_regret_list_KL, label='KL',color='g')
+        cum_regret_plot.plot(result_BKL['cum_regret'],label='BKL',color='r')
+        cum_regret_plot.plot(result_KL['cum_regret'], label='KL',color='g')
         # cum_regret_plot.plot(cum_regret_list_UCB, label='UCB',color='b')
         cum_regret_plot.legend(loc='upper right')
 
         prob_opt_plot = f.add_subplot(212, sharex=cum_regret_plot)
         prob_opt_plot.set_title('Prob opt')
-        prob_opt_plot.plot(prob_opt_list_BKL, label='BKL',color='r')
-        prob_opt_plot.plot(prob_opt_list_KL, label='KL',color='g')
+        prob_opt_plot.plot(result_BKL['prob_opt'], label='BKL',color='r')
+        prob_opt_plot.plot(result_KL['prob_opt'], label='KL',color='g')
         # prob_opt_plot.plot(prob_opt_list_UCB, label='UCB',color='b')
         prob_opt_plot.legend(loc='upper right')
 
@@ -616,8 +628,8 @@ param_case = bkl.Param_determine()
 hx = bkl.u_arm[np.abs(bkl.opt_arm-1)]
 u_star = bkl.opt_mean
 
-# result_BKL = bkl.BKL_Bandit('BKL')
-# result_KL = bkl.BKL_Bandit('KL')
+result_BKL = bkl.BKL_Bandit('BKL')
+result_KL = bkl.BKL_Bandit('KL')
 # result_UCB = bkl.UCB('UCB')
 
 

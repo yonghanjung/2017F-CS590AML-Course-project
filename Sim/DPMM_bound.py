@@ -214,6 +214,7 @@ class DP_sim(DataGen):
         self.Y_x = self.Obs[self.Obs['X']==self.x]['Y']
         self.Yinv_x = self.Intv[self.Intv['X']==self.x]['Y']
         self.Ysinv_x = self.Intv_S[self.Intv_S['X']==self.x]['Y']
+        self.init_compo = 20
 
     def preprocess(self, X):
         if X.shape[1] >= X.shape[0] or pd.isnull(X.shape[1]):
@@ -225,10 +226,9 @@ class DP_sim(DataGen):
     def Fit(self, X):
         X = np.reshape(X, (len(X), 1))
         X = self.preprocess(X)
-        init_compo = 20
         dpgmm= mixture.BayesianGaussianMixture(
-            n_components=init_compo, weight_concentration_prior=1 / self.num_obs,
-            max_iter=1000, tol=1e-10, ).fit(X)
+            n_components=self.init_compo, weight_concentration_prior= 1,
+            max_iter=100, tol=1e-8 ).fit(X)
         return dpgmm
 
     def DP_fit(self):
@@ -321,7 +321,9 @@ class CausalBound(DP_sim, KL_computation):
             cons = ({'type': 'ineq',
                      'fun': lambda x: Hx - self.KL_GMM(f_weights, g_weights, f_means, x, f_stds, g_stds)[0]},
                     {'type': 'ineq',
-                     'fun': lambda x: self.KL_GMM(f_weights, g_weights, f_means, x, f_stds, g_stds)[0]}
+                     'fun': lambda x: self.KL_GMM(f_weights, g_weights, f_means, x, f_stds, g_stds)[0]},
+                    {'type': 'ineq',
+                     'fun': lambda x: - np.sum(np.square(x))  + 10*np.sum(np.square(f_means)) }
                     )
 
             x0 = f_means
@@ -336,15 +338,44 @@ class CausalBound(DP_sim, KL_computation):
             return [np.sum(lower.x * g_weights), np.sum(true_means * g_weights),
                     np.sum(upper.x * g_weights)]
 
+    def Graph_DPFit(self):
+        if self.Mode == 'easy':
+            print("Graph_DPFit method is only for 'crazy' mode")
+            raise MyError
+
+        f = plt.figure()
+
+        X_int = np.reshape(self.Yinv_x, (len(self.Yinv_x), 1))
+        X_int = self.preprocess(X_int)
+        int_plot = f.add_subplot(211)
+        X_int_kde = np.ndarray.flatten(X_int)
+        intv_density = gaussian_kde(X_int_kde)
+        x_domain_int = np.linspace(min(X_int_kde) - abs(max(X_int_kde)), max(X_int_kde) + abs(max(X_int_kde)),
+                                   self.num_obs)
+        int_plot.plot(x_domain_int, intv_density(x_domain_int))
+        int_plot.hist(X_int, 100, normed=True)
+        int_plot.set_title('True interventional')
+
+        sim_plot = f.add_subplot(212)
+        X_sim = self.dpintv.sample(self.num_obs)[0]
+        X_sim = np.ndarray.flatten(X_sim)
+        # X_sim= [item for sublist in X_sim for item in sublist]
+        sim_density = gaussian_kde(X_sim)
+        # sim_x_domain = np.linspace(min(X_sim) - 5, max(X_sim) + 5, self.num_data)
+        sim_plot.plot(x_domain_int, sim_density(x_domain_int))
+        sim_plot.hist(X_sim, int(self.num_obs / 100), normed=True)
+        sim_plot.set_title('Sampled by DP simluation')
+        return f
+
 class B_KLUCB(CausalBound):
     '''
     Currently this class is only applicable for 'easy' mode
     '''
     def __init__(self, D,N,Ns,Mode,T, K,x):
         super().__init__(D, N, Ns, Mode, x)
-        if self.Mode == 'crazy':
-            print("Crazy mode is not allowed")
-            raise MyError()
+        # if self.Mode == 'crazy':
+        #     print("Crazy mode is not allowed")
+        #     raise MyError()
         self.T = T # number of iteration of bandits
         self.K = K # number of arms
 
@@ -617,7 +648,7 @@ class Graph(B_KLUCB):
 
 #################### MAIN ############################
 '''Causal bound simulation'''
-D = 10
+D = 100
 N = 10000
 Ns = 2000
 Mode = 'crazy'
