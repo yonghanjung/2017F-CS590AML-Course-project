@@ -20,7 +20,7 @@ class DataGen(object):
 
     # Seed fix
     # Some good seed are 1234, 12345.
-    np.random.seed(12345)
+    np.random.seed(123)
     def __init__(self,D,N,Ns,Mode):
         '''
         Initializing the class
@@ -56,7 +56,7 @@ class DataGen(object):
         :param X:
         :return:
         '''
-        X_proj = np.log(np.abs(X)+20) * np.arctan(X) + (10*np.sin(X)) - (np.tan(X ** 2) + 20) * np.exp(X-20)
+        X_proj = np.log(np.abs(X)+20) * np.arctan(X) + (-10*np.sin(X)) - (np.tan(X ** 2) + 20) * np.exp(-X + 20)
         X_proj = (X_proj - np.mean(X_proj, axis=0)) / np.var(X_proj)
         return X_proj
 
@@ -93,7 +93,7 @@ class DataGen(object):
         if self.Mode == 'easy':
             Z = -self.U1 + self.U2
         elif self.Mode == 'crazy':
-            Z = np.log(np.abs(self.U1)+1) + self.U2
+            Z = np.log(np.abs(self.U1)+1) - (self.U2 ** 2)
         # self.Z = ((Z - np.mean(Z, axis=0)) / np.var(Z))
         self.Z = normalize(Z)
 
@@ -110,6 +110,7 @@ class DataGen(object):
             self.X_obs = self.intfy( np.round( normalize(sp.expit( Z*coef_xz - U3 * coef_u3x - U1 * coef_u1x)) , 0) )
         elif self.Mode == 'crazy':
             X = np.log(np.abs(U1 * coef_u1x)+1) - (U3 * coef_u3x) + np.abs(Z * coef_xz)
+            X = sp.expit(X)
             X = np.round( normalize(X), 0)
             self.X_obs = self.intfy(X)
         self.X_intv = self.intfy(np.asarray([0] * int(self.num_obs / 2) +
@@ -207,6 +208,7 @@ class DataGen(object):
 
 class DP_sim(DataGen):
     def __init__(self,D,N,Ns,Mode,x):
+
         self.x = x
         super().__init__(D,N,Ns,Mode)
 
@@ -279,6 +281,10 @@ class KL_computation():
 
 
 class CausalBound(DP_sim, KL_computation):
+    def __init__(self,D,N,Ns,Mode,x):
+        super().__init__(D,N,Ns,Mode,x)
+        self.const_bound = 3 * np.std(self.Ysinv_x)
+
     def Set_x(self, x):
         self.x = x
         self.Y_x = self.Obs[self.Obs['X'] == self.x]['Y']
@@ -312,7 +318,9 @@ class CausalBound(DP_sim, KL_computation):
             Hx = self.Entropy_x()
             rounding_digit = 4
             f_means = np.round(self.dpobs.means_, rounding_digit)
-            true_means = np.round(self.dpintv.means_, rounding_digit)
+            g_means = np.round(self.dpintv_s.means_, rounding_digit)
+            # true_means = np.round(self.dpintv.means_, rounding_digit)
+            # true_weights = np.round(self.dpintv.weights_, rounding_digit)
             f_weights = np.round(self.dpobs.weights_, rounding_digit)
             g_weights = np.round(self.dpintv_s.weights_, rounding_digit)
             f_stds = np.ndarray.flatten(np.round(np.sqrt(self.dpobs.covariances_), rounding_digit))
@@ -323,7 +331,7 @@ class CausalBound(DP_sim, KL_computation):
                     {'type': 'ineq',
                      'fun': lambda x: self.KL_GMM(f_weights, g_weights, f_means, x, f_stds, g_stds)[0]},
                     {'type': 'ineq',
-                     'fun': lambda x: - np.sum(np.square(x))  + 10*np.sum(np.square(f_means)) }
+                     'fun': lambda x: - np.sum(np.square(x))  + self.const_bound*np.sum(np.square(g_means)) }
                     )
 
             x0 = f_means
@@ -335,8 +343,12 @@ class CausalBound(DP_sim, KL_computation):
             lower = minimize(min_fun, x0=x0, constraints=cons, method='SLSQP',options={'maxiter':max_iter,'disp':True})
             upper = minimize(max_fun, x0=x0, constraints=cons, method='SLSQP',options={'maxiter':max_iter,'disp':True})
             # return [np.sum(lower.x * g_weights),np.sum(true_means * g_weights),np.sum(upper.x*g_weights)], lower, upper
-            return [np.sum(lower.x * g_weights), np.sum(true_means * g_weights),
-                    np.sum(upper.x * g_weights)]
+
+            self.LB = np.sum(lower.x * g_weights)
+            self.UB = np.sum(upper.x * g_weights)
+            self.true_mean = np.mean(self.Yinv_x)
+
+            return [self.LB, self.true_mean,self.UB]
 
     def Graph_DPFit(self):
         if self.Mode == 'easy':
@@ -365,6 +377,9 @@ class CausalBound(DP_sim, KL_computation):
         sim_plot.plot(x_domain_int, sim_density(x_domain_int))
         sim_plot.hist(X_sim, int(self.num_obs / 100), normed=True)
         sim_plot.set_title('Sampled by DP simluation')
+        sim_plot.axvline(x=self.LB, label='Lower bound')
+        sim_plot.axvline(x=self.UB, label ='Upper bound')
+        sim_plot.axvline(x=self.true_mean, label = 'True mean')
         return f
 
 class B_KLUCB(CausalBound):
@@ -648,16 +663,18 @@ class Graph(B_KLUCB):
 
 #################### MAIN ############################
 '''Causal bound simulation'''
-D = 100
+D = 10
 N = 10000
-Ns = 2000
+Ns = D*20
 Mode = 'crazy'
-x = 1
+x = 0
 T = 2000
 K = 2
 
 cb = CausalBound(D,N,Ns,Mode,x)
 result = cb.ComputeBound()
+f = cb.Graph_DPFit()
+f.show()
 
 
 ''' MAB simulation '''

@@ -107,7 +107,7 @@ class DataGen(object):
         Z = np.matrix(self.Z)
 
         if self.Mode == 'easy':
-            self.X_obs = self.intfy( np.round( normalize(sp.expit( Z*coef_xz - U3 * coef_u3x - U1 * coef_u1x)) , 0) )
+            self.X_obs = self.intfy( np.round( normalize(sp.expit( Z*coef_xz - U3 * coef_u3x - U1 * coef_u1x + 10 )) , 0) )
         elif self.Mode == 'crazy':
             X = np.log(np.abs(U1 * coef_u1x)+1) - (U3 * coef_u3x) + np.abs(Z * coef_xz)
             X = np.round( normalize(X), 0)
@@ -620,8 +620,8 @@ class Graph(B_KLUCB):
 D = 10
 N = 10000
 Ns = 2000
-Mode = 'crazy'
-x = 1
+Mode = 'easy'
+x = 0
 T = 2000
 K = 2
 
