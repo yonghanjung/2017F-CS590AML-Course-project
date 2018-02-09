@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e886f88e-af77-479c-8cab-e301368e052e" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/PearlBound/__init__.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/PearlBound/demo-symbolic.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Sim/Easy.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/demo.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Sim/DPMM_bound.py" afterPath="$PROJECT_DIR$/Sim/DPMM_bound.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Sim/Param1.py" afterPath="$PROJECT_DIR$/Sim/Param1.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Sim/Param2.py" afterPath="$PROJECT_DIR$/Sim/Param2.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/PearlBound/demo-symbolic.py" afterPath="" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -21,11 +13,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="demo-symbolic.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/PearlBound/demo-symbolic.py">
+      <file leaf-file-name="Simplex.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/PearlBound/Simplex.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="356">
-              <caret line="21" column="19" lean-forward="true" selection-start-line="21" selection-start-column="19" selection-end-line="21" selection-end-column="19" />
+            <state relative-caret-position="180">
+              <caret line="9" column="26" lean-forward="true" selection-start-line="9" selection-start-column="26" selection-end-line="9" selection-end-column="26" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -326,7 +318,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/causal_bounds.py" />
     <entry file="file://$PROJECT_DIR$/causal_bounds_specific.py" />
     <entry file="file://$USER_HOME$/Library/Caches/PyCharmCE2017.2/python_stubs/-2010535109/numpy/core/multiarray.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -649,8 +640,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/PearlBound/demo-symbolic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="356">
-          <caret line="21" column="19" lean-forward="true" selection-start-line="21" selection-start-column="19" selection-end-line="21" selection-end-column="19" />
+        <state relative-caret-position="60">
+          <caret line="3" column="12" lean-forward="true" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PearlBound/Simplex.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="9" column="26" lean-forward="true" selection-start-line="9" selection-start-column="26" selection-end-line="9" selection-end-column="26" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
