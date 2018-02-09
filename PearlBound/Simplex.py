@@ -36,8 +36,14 @@ def Simplex(CM,rH):
         ratio = []
         for i in range(1,I):
             ratio_i = CM[i,J]/CM[i,j_star]
-            ratio.append(ratio_i)
-        i_star = np.argmin(ratio)+1
+            if CM[i,j_star] == 0.0:
+                ratio.append(10 ** 10)
+            else:
+                # For harmonizing with Sympy
+                ratio.append(ratio_i)
+                i_star = i
+                break
+        # i_star = np.argmin(ratio)+1
         CM_istar = CM[i_star,]
 
         # pivot
@@ -52,6 +58,22 @@ def Simplex(CM,rH):
 
     CM_sol = CM[:,1:J]
     rH = CM[:,J]
+    I,J = CM_sol.shape
+
+    i_rem = 0
+    if rH[0,0] == 0:
+        for i in range(1,I):
+            for j in range(J):
+                if CM_sol[i,j] - CM_sol[0,j] > 0:
+                    match = False
+                    break
+                else:
+                    match = True
+            if match == True:
+                i_rem = i
+                break
+        rH[0,0] = rH[i_rem,0]
+
     return CM_sol, rH
 
 
@@ -61,12 +83,19 @@ def Simplex(CM,rH):
 # rH = np.matrix([0,4,3]).T
 # CM_sol, rH_sol = Simplex(CM,rH)
 
-CM = [[0,1,0,1,0,1,0,1], \
+CM = [[0,-1,0,-1,0,-1,0,-1], \
      [1,1,0,0,0,0,0,0], \
      [0,0,1,1,0,0,0,0], \
      [0,1,0,0,0,0,1,0], \
      [0,0,0,0,0,1,0,1]]
 CM = np.matrix(CM)
-rH = np.matrix( [0,0.1,0.2,0.3,0.4] ).T
+z, p00, p01, p10, p11 = sympy.symbols('z p00 p01 p10 p11')
+z = z.subs(z,0)
+rH = np.matrix([z, p00,p01,p10,p11  ]).T
 CM_sol, rH_sol = Simplex(CM,rH)
+
+
+# rH = np.matrix( [0,0.1,0.2,0.3,0.4] ).T
+
+
 
